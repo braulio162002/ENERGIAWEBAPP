@@ -1,0 +1,304 @@
+html, body {
+  /* Ajusta la ruta y el hotspot según tu PNG */
+  cursor: url('/static/img/pngwing.com.png') 16 16, auto;
+}
+body {
+  background: linear-gradient(135deg, #183c23 0%, #194c36 100%);
+  font-family: 'Montserrat', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.welcome-box {
+  background: rgba(255,255,255,0.96);
+  border-radius: 24px;
+  box-shadow: 0 4px 28px #67ce8155, 0 1.5px 6px #3332;
+  padding: 46px 38px 24px 38px;
+  text-align: center;
+  width: 100%;              /* Esto es clave */
+  max-width: 460px;         /* O el tamaño que quieras para PC */
+  margin: 44px auto 22px auto;
+  min-width: 0;             /* Asegura que puede achicarse */
+  box-sizing: border-box;   /* Importante para que el padding no expanda */
+}
+
+@media (max-width: 600px) {
+  .welcome-box {
+    padding: 20px 8px 20px 8px; /* Menos padding lateral en móvil */
+    max-width: 97vw;
+    font-size: 0.98em;
+  }
+  .welcome-box img {
+    max-width: 90vw;
+    height: auto;
+  }
+}
+
+
+h1 {
+  font-size: 2.2em;
+  color: #34a853;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+.subt {
+  color: #444;
+  margin-bottom: 24px;
+  font-size: 1.06em;
+  line-height: 1.4em;
+}
+.emoji {
+  font-size: 1.22em;
+}
+.op-btn {
+  margin: 12px 10px;
+  padding: 18px 30px 12px 30px;
+  font-size: 1.13em;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  background: #dafbe8;
+  color: #16793d;
+  box-shadow: 0 2px 14px #b2f6c6aa;
+  cursor: pointer;
+  transition: all .16s;
+  min-width: 160px;
+  min-height: 76px;
+  display: inline-block;
+  vertical-align: top;
+}
+.op-btn:hover {
+  background: #34a853;
+  color: #fff;
+  transform: translateY(-3px) scale(1.045);
+}
+.fruta-cong { background: #e7f6fd; color: #1775be; box-shadow: 0 1px 7px #9342a175;}
+.fruta-cong:hover { background: #54b4e4; color: #fff; }
+.fruta-aran { background: #fff6f9; color: #9342a1; box-shadow: 0 1px 7px #9342a175;}
+.fruta-aran:hover { background: #7b2696; color: #fff; }
+.op-btn .desc {
+  color: #fff !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 8px #16793d33, 0 2px 12px #fff2;
+}
+.desc {
+  display: block;
+  font-weight: 400;
+  font-size: 0.98em;
+  color: #fff;
+  margin-top: 6px;
+  opacity: 0.82;
+}
+.footer-frutas {
+  margin-top: 30px;
+}
+.footer-frutas img {
+  margin: 0 5px;
+  vertical-align: middle;
+  opacity: 0.72;
+  transition: opacity 0.18s;
+}
+.footer-frutas img:hover {
+  opacity: 1;
+}
+body {
+  background: linear-gradient(120deg, #183c23 40%, #245241 100%);
+  min-height: 100vh;
+}
+
+.aran-container {
+  max-width: 430px;
+  margin: 48px auto;
+  background: #f9fafb;
+  border-radius: 32px;
+  box-shadow: 0 8px 36px #0005, 0 1.5px 0 #00ba6333 inset;
+  padding: 38px 38px 30px 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid #30a16830;
+}
+.aran-header {
+  display: flex;
+  flex-direction: column;  /* Apila verticalmente */
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.aran-title {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.aran-subtitle {
+  font-size: 1.15rem;
+  color: #2e2e2e;
+  font-weight: 600;
+  margin-top: 5px;
+  margin-bottom: 14px;
+}
+
+.aran-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.aran-instruccion {
+  font-size: 1.02rem;
+  color: #264024;
+  background: #eafaf2;
+  padding: 8px 14px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.aran-upload {
+  margin: 0 auto;
+  background: #e3dcfa;
+  padding: 12px 18px;
+  border-radius: 16px;
+  box-shadow: 0 2px 14px #b3b3ff38;
+  color: #5e3ca7;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: background 0.2s;
+  cursor: pointer;
+  display: block;
+  width: fit-content;
+  position: relative;
+}
+.aran-upload input[type="file"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.aran-upload span {
+  pointer-events: none;
+}
+
+.aran-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(90deg, #7b4fc2 50%, #30a168 100%);
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px #14482938;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.18s, box-shadow 0.18s;
+  letter-spacing: 1px;
+}
+.aran-btn:hover {
+  background: linear-gradient(90deg, #30a168 0%, #7b4fc2 100%);
+  box-shadow: 0 7px 28px #30a16855;
+}
+
+.aran-kpi-block {
+  background: #eafaf2;
+  border-radius: 12px;
+  margin-top: 26px;
+  padding: 14px 0;
+  box-shadow: 0 2px 10px #5e3ca72a;
+}
+.aran-kpis {
+  display: flex;
+  gap: 26px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.aran-kpi {
+  background: #f5f3ff;
+  padding: 11px 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #7b4fc215;
+  min-width: 90px;
+  text-align: center;
+}
+.aran-kpi-label {
+  display: block;
+  color: #5e3ca7;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+.aran-kpi-value {
+  color: #2eb860;
+  font-size: 1.28rem;
+  font-weight: bold;
+}
+#graficos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 16px;
+}
+#grafico1 { grid-column: 1/3; }
+
+@media (max-width: 600px) {
+  .welcome-box {
+    min-width: 0;
+    width: 95vw;
+    max-width: 99vw;
+    padding: 20px 2vw 18px 2vw;
+  }
+  h1 {
+    font-size: 1.45em;
+  }
+}
+.pdf-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 32px 0 32px 0;  /* MISMO ESPACIO arriba y abajo */
+}
+.btn-exportar-pdf {
+    background: linear-gradient(90deg, #18d36e 80%, #22b16e 100%);
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 9px 30px 9px 14px;
+    font-size: 1.22em;
+    font-family: 'Montserrat', Arial, sans-serif;
+    font-weight: 700;
+    box-shadow: 0 3px 18px #15a55a22;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: transform 0.08s, box-shadow 0.12s;
+  }
+.btn-exportar-pdf:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 7px 20px #1bb96e40;
+    background: linear-gradient(90deg, #14c060 70%, #2de780 100%);
+  }
+.icono-pdf img {
+    margin-right: 8px;
+    vertical-align: middle;
+    width: 25px;
+    height: 25px;
+  }
+.solo-pdf {
+  display: none;
+}
+#pdf-header { display: none; }
+@media print {
+    #pdf-header { display: block !important; }
+    .container { margin-top: 40px !important; }
+    #web-only { display: none !important; }
+}
+@media print {
+  .solo-web {
+    display: none !important;
+  }
+}
