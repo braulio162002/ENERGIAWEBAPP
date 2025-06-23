@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgroBeta | Dashboard de Energia</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="welcome-box">
+    <img src="https://cdn.prod.website-files.com/65d239c529f6f9c10f1b228a/6608358c6e37447b5b3242ca_beta.png"
+       width="300"
+       alt="Logo Beta"
+       style="margin-bottom: 10px; margin-top: 48px;">
+    <h1>🍇 Beta Ica 🍇</h1>
+    <p class="subt">Bienvenido a tu plataforma de control energía.<br>
+      <span class="emoji">⚡</span> Elige la línea que deseas analizar:</p>
+    <form action="/seleccion" method="post">
+      <button class="op-btn fruta-cong" name="proceso" value="congelados">🥶 <b>CONGELADOS</b><br><span class="desc">Arilos & Esparragos congelados</span></button>
+      <button class="op-btn fruta-aran" name="proceso" value="arandanos">🫐 <b>ARÁNDANOS</b><br><span class="desc">Blueberries</span></button>
+    </form>
+    <div class="footer-frutas">
+      <img src="https://cdn-icons-png.flaticon.com/512/782/782755.png" width="32">
+      <img src="https://cdn-icons-png.flaticon.com/512/415/415700.png" width="32">
+      <img src="https://cdn-icons-png.flaticon.com/512/861/861239.png" width="32">
+    </div>
+  </div>
+</body>
+</html>

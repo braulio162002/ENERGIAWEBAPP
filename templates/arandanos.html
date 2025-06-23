@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <title>Dashboard de Energía - Arándanos</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:600,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      background: linear-gradient(120deg, #183c23 40%, #245241 100%);
+      font-family: 'Montserrat', Arial, sans-serif;
+      margin: 0; padding: 0;
+    }
+    .container {
+      max-width: 1100px;
+      background: #fff;
+      border-radius: 22px;
+      margin: 40px auto 24px auto;
+      box-shadow: 0 8px 44px #184c2c44;
+      padding: 38px 40px 28px 40px;
+    }
+    h1 {
+      text-align: center;
+      color: #32b852;
+      margin-bottom: 6px;
+      font-size: 2.1em;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+    .filtros {
+      display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 22px; align-items: flex-end;
+    }
+    .filtros > div { flex: 1 1 190px; }
+    .filtros label {
+      font-weight: 700; color: #256c40; font-size: 1em; margin-bottom: 3px; display: block;
+    }
+    .filtros input, .filtros select {
+      width: 100%; font-size: 1em; border-radius: 10px; padding: 8px; border: 1px solid #86c0a5;
+    }
+    .tabla {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 22px;
+    }
+    .tabla th, .tabla td {
+        border: 1px solid #caf5db;
+        padding: 7px 10px;
+        text-align: center;
+    }
+    .tabla th {
+        background: #e4fbe7;
+        color: #218451;
+        font-weight: bold;
+    }
+    .tabla td {
+        background: #f7fff7;
+    }
+    .resumen {
+      background: #eafaf2;
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin: 22px 0 26px 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 30px;
+      justify-content: center;
+    }
+    .res-box {
+      min-width: 120px;
+      text-align: center;
+    }
+    .res-box .label { font-weight: 700; color: #33715a; }
+    .res-box .valor { font-size: 1.24em; color: #332; margin-top: 3px; }
+    .graficos {
+      display: flex; flex-wrap: wrap; gap: 28px; margin-top: 26px; justify-content: center;
+    }
+    .grafico-card {
+      background: #f6fafe;
+      border-radius: 16px;
+      box-shadow: 0 3px 12px #0002;
+      min-width: 410px;
+      padding: 22px 16px;
+      margin-bottom: 8px;
+      flex: 1 1 500px;
+      max-width: 600px;
+    }
+    @media (max-width: 900px) {
+      .container { padding: 22px 5vw; }
+      .graficos { flex-direction: column; }
+      .grafico-card { min-width: 0; max-width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Encabezado SOLO para PDF (oculto en la web) -->
+  <div id="pdf-header" style="display:none;">
+    <div style="text-align:center; margin-bottom:10px;">
+      <img src="https://cdn.prod.website-files.com/65d239c529f6f9c10f1b228a/6608358c6e37447b5b3242ca_beta.png" alt="Logo Beta" style="max-width:220px;">
+    </div>
+    <div style="text-align:right; color:#277d56; font-size:1.08em; margin-bottom:15px;">
+      Exportado: {{ fecha_actual }}
+    </div>
+    <div style="text-align:center;">
+      <h1 style="color:#22844a; margin-bottom:8px;">Dashboard Energía ⚡<br>Arándanos - {{ nombre_planta|default('Beta Ica') }}</h1>
+      <div style="font-size:1.13em; color:#277d56;">
+        <b>Periodo:</b> {{ fecha_inicio }} a {{ fecha_fin }}<br>
+        <b>Nivel:</b> {{ nivel_label }}<br>
+        {% if proceso_label %}<b>Proceso:</b> {{ proceso_label }}<br>{% endif %}
+        {% if equipo_label %}<b>Equipo:</b> {{ equipo_label }}<br>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="dashboard-export">
+    <h1 class="solo-web" style="color:#218451; font-size:2.6em; font-weight:800;">
+        Dashboard de Energía⚡- Arandanos 🫐
+    </h1>
+    <!-- FILTROS -->
+    <form class="filtros solo-web" method="get" action="{{ url_for('dashboard_arandanos') }}" id="filtros-form">
+      <!-- Selector de Nivel -->
+      <div>
+        <label>Nivel:</label>
+        <select name="nivel" onchange="this.form.submit()">
+          <option value="PLANTA"  {% if nivel=='PLANTA'  %}selected{% endif %}>Planta</option>
+          <option value="PROCESO" {% if nivel=='PROCESO' %}selected{% endif %}>Proceso</option>
+        </select>
+      </div>
+
+      <!-- Si nivel es PLANTA -->
+      {% if nivel == "PLANTA" %}
+        <div>
+          <label>Variable:</label>
+          <select name="indicador" onchange="this.form.submit()">
+            {% for key, label in planta_vars %}
+              <option value="{{key}}" {% if key==indicador %}selected{% endif %}>
+                {% if label == "Planta General" or label == "BETA ICA" %}BETA ICA{% else %}{{label}}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <!-- Si nivel es PROCESO -->
+      {% if nivel == "PROCESO" %}
+        <div>
+          <label>Proceso:</label>
+          <select name="proceso" onchange="this.form.submit()">
+            {% for key, label in procesos_vars %}
+              <option value="{{key}}" {% if proceso==key %}selected{% endif %}>{{label}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% set equipos_disp = procesos_equipos_dict.get(proceso, []) %}
+        {% if equipos_disp|length > 0 %}
+          <div>
+            <label>Equipo (opcional):</label>
+            <select name="equipo" onchange="this.form.submit()">
+              <option value="">— General —</option>
+              {% for key, label in equipos_disp %}
+                <option value="{{key}}" {% if equipo==key %}selected{% endif %}>{{label}}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <!-- Estas SIEMPRE van, fuera de los if -->
+      <div>
+        <label>Unidad:</label>
+        <select name="unidad" onchange="this.form.submit()">
+          <option value="kg" {% if unidad == "kg" %}selected{% endif %}>KG</option>
+          <option value="ton" {% if unidad == "ton" %}selected{% endif %}>Toneladas</option>
+        </select>
+      </div>
+      <div>
+        <label>Fecha inicio:</label>
+        <input type="text" name="fecha_inicio" id="fecha_inicio" class="fecha-picker" value="{{fecha_inicio}}" autocomplete="off">
+      </div>
+      <div>
+        <label>Fecha fin:</label>
+        <input type="text" name="fecha_fin" id="fecha_fin" class="fecha-picker" value="{{fecha_fin}}" autocomplete="off">
+      </div>
+      </form>
+      <form class="solo-web" id="pdf-export-form" method="post" action="/exportar_pdf" target="_blank" style="display:inline;">
+      <input type="hidden" name="pdf_html" id="pdf_html_input">
+      <button type="button" class="btn-exportar-pdf" onclick="exportarDashboardPDF()">
+        <img src="https://cdn-icons-png.flaticon.com/512/5558/5558841.png" alt="pdf"
+          style="width:22px;height:22px;vertical-align:-6px; margin-right:7px;">
+        <span>Exportar PDF</span>
+      </button>
+    </form>
+    <div class="solo-pdf" id="bloque-pdf-header">
+      <h1 style="color:#218451; text-align:center; font-size:2.4em; margin-bottom:5px; margin-top:0;">
+        Reporte Energia - Arándanos - {{nombre}}
+      </h1>
+      <div style="text-align:center; color:#257050; font-size:1.15em;">
+        Periodo: {{fecha_inicio}} a {{fecha_fin}}<br>
+        Nivel: {{nombre}}
+      </div>
+      <br>
+    </div>
+
+      
+      
+    <!-- RESUMEN PRODUCCIÓN -->
+    <div class="resumen">
+      <div class="res-box">
+        <div class="label">Total {{ "KG" if unidad == "kg" else "Toneladas" }} Procesados</div>
+        <div class="valor">{{ '{:,.2f}'.format(suma_kg_procesados) }}</div>
+      </div>
+      <div class="res-box">
+        <div class="label">Total {{ "KG" if unidad == "kg" else "Toneladas" }} Ingresados</div>
+        <div class="valor">{{ '{:,.2f}'.format(suma_kg_ingresados) }}</div>
+      </div>
+      <div class="res-box">
+        <div class="label">Presentación</div>
+        <div class="valor">{{presentacion}}</div>
+      </div>
+      <div class="res-box">
+        <div class="label">Variedad</div>
+        <div class="valor">{{variedad}}</div>
+      </div>
+    </div>
+   
+    <!-- TABLA KPI POR DÍA -->
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Energía (kWh)</th>
+          <th>Potencia (kW)</th>
+          <th>Factor Potencia (%)</th>
+          <th>Producción ({{ "Kg" if unidad == "kg" else "Ton" }})</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in df %}
+        <tr>
+          <td>{{row.FECHA}}</td>
+          <td>{{"{:,.2f}".format(row.kWh) if row.kWh else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.kW)  if row.kW  else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.FP)  if row.FP  else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.KG)  if row.KG  else "-"}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    
+
+    <!-- GRÁFICOS AVANZADOS -->
+    <div class="graficos">
+      <!-- Combinado Producción + Energía -->
+      <div class="grafico-card"><canvas id="grafico_prod_energia"></canvas></div>
+      <!-- Scatter Energía vs Producción -->
+      <div class="grafico-card"><canvas id="grafico_scatter_energia"></canvas></div>
+      <!-- Combinado Producción + Potencia -->
+      <div class="grafico-card"><canvas id="grafico_prod_potencia"></canvas></div>
+      <!-- Scatter Potencia vs Producción -->
+      <div class="grafico-card"><canvas id="grafico_scatter_potencia"></canvas></div>
+      <!-- Evolución Factor Potencia -->
+      <div class="grafico-card"><canvas id="grafico_fp_evol"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Chart.js y Flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    flatpickr(".fecha-picker", {
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates, dateStr, instance) {
+        document.getElementById('filtros-form').submit();
+      }
+    });
+    
+
+    // DATOS DESDE PYTHON
+    const fechas = {{ fechas|tojson }};
+    const prod_dia = {{ prod_dia|tojson }};
+    const energia_dia = {{ energia_dia|tojson }};
+    const potencia_dia = {{ potencia_dia|tojson }};
+    const fp_dia = {{ fp_dia|tojson }};
+    const scatter_energia_prod = {{ scatter_energia_prod|tojson }};
+    const scatter_potencia_prod = {{ scatter_potencia_prod|tojson }};
+    const fit_energia = {{ fit_energia|tojson }};
+    const fit_potencia = {{ fit_potencia|tojson }};
+
+    // Opciones comunes
+    const opcionesZoom = {
+      responsive: true,
+      plugins: {
+        zoom: {
+          pan: { enabled: true, mode: 'xy' },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'xy' }
+        },
+        legend: { labels: { font: { size: 12 } } },
+        tooltip: { bodyFont: { size: 13 } }
+      },
+      scales: {
+        x: {
+          ticks: {
+            font: { size: 10 },
+            autoSkip: true,
+            maxRotation: 45,
+            minRotation: 45,
+            callback: function(val) {
+              let label = this.getLabelForValue(val);
+              return label.length === 10 ? label.substring(5) : label;
+            }
+          }
+        },
+        y: { ticks: { font: { size: 11 } } }
+      }
+    };
+
+    // 1. Combinado PRODUCCIÓN + ENERGÍA
+    new Chart(document.getElementById('grafico_prod_energia'), {
+      type: 'bar',
+      data: {
+        labels: fechas,
+        datasets: [
+          {
+            label: 'Producción',
+            data: prod_dia,
+            backgroundColor: '#3498dbbb',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Energía (kWh)',
+            data: energia_dia,
+            type: 'line',
+            borderColor: '#e67e22',
+            backgroundColor: 'transparent',
+            yAxisID: 'y1',
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 8
+          }
+        ]
+      },
+      options: {
+        ...opcionesZoom,
+        plugins: {
+          ...opcionesZoom.plugins,
+          title: { display: true, text: 'Producción diaria y Energía (kWh)', font: { size: 15 } }
+        },
+        scales: {
+          x: opcionesZoom.scales.x,
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Producción' } },
+          y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Energía (kWh)' } }
+        }
+      }
+    });
+
+    // 2. Scatter correlación Energía vs Producción
+    new Chart(document.getElementById('grafico_scatter_energia'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Días',
+            data: scatter_energia_prod,
+            backgroundColor: '#2980b9',
+          },
+          {
+            label: 'Tendencia',
+            type: 'line',
+            data: [
+              {x: Math.min(...scatter_energia_prod.map(d=>d.x)), y: fit_energia.slope * Math.min(...scatter_energia_prod.map(d=>d.x)) + fit_energia.intercept },
+              {x: Math.max(...scatter_energia_prod.map(d=>d.x)), y: fit_energia.slope * Math.max(...scatter_energia_prod.map(d=>d.x)) + fit_energia.intercept }
+            ],
+            borderColor: '#e74c3c',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        ...opcionesZoom,
+        plugins: {
+          ...opcionesZoom.plugins,
+          title: { display: true, text: 'Correlación Energía vs Producción', font: { size: 15 } }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Producción' }, beginAtZero: true },
+          y: { title: { display: true, text: 'Energía (kWh)' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // 3. Combinado PRODUCCIÓN + POTENCIA
+    new Chart(document.getElementById('grafico_prod_potencia'), {
+      type: 'bar',
+      data: {
+        labels: fechas,
+        datasets: [
+          {
+            label: 'Producción',
+            data: prod_dia,
+            backgroundColor: '#5e60cebb',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Potencia (kW)',
+            data: potencia_dia,
+            type: 'line',
+            borderColor: '#ffa600',
+            backgroundColor: 'transparent',
+            yAxisID: 'y1',
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 8
+          }
+        ]
+      },
+      options: {
+        ...opcionesZoom,
+        plugins: {
+          ...opcionesZoom.plugins,
+          title: { display: true, text: 'Producción diaria y Potencia (kW)', font: { size: 15 } }
+        },
+        scales: {
+          x: opcionesZoom.scales.x,
+          y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Producción' } },
+          y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Potencia (kW)' } }
+        }
+      }
+    });
+
+    // 4. Scatter correlación Potencia vs Producción
+    new Chart(document.getElementById('grafico_scatter_potencia'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Días',
+            data: scatter_potencia_prod,
+            backgroundColor: '#606fc7',
+          },
+          {
+            label: 'Tendencia',
+            type: 'line',
+            data: [
+              {x: Math.min(...scatter_potencia_prod.map(d=>d.x)), y: fit_potencia.slope * Math.min(...scatter_potencia_prod.map(d=>d.x)) + fit_potencia.intercept },
+              {x: Math.max(...scatter_potencia_prod.map(d=>d.x)), y: fit_potencia.slope * Math.max(...scatter_potencia_prod.map(d=>d.x)) + fit_potencia.intercept }
+            ],
+            borderColor: '#ff7f0e',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        ...opcionesZoom,
+        plugins: {
+          ...opcionesZoom.plugins,
+          title: { display: true, text: 'Correlación Potencia vs Producción', font: { size: 15 } }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Producción' }, beginAtZero: true },
+          y: { title: { display: true, text: 'Potencia (kW)' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // 5. Evolución Factor Potencia
+    new Chart(document.getElementById('grafico_fp_evol'), {
+      type: 'line',
+      data: {
+        labels: fechas,
+        datasets: [{
+          label: 'Factor Potencia (%)',
+          data: fp_dia,
+          borderColor: '#d9ae17',
+          backgroundColor: '#d9ae1733',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointHoverRadius: 8
+        }]
+      },
+      options: {
+        ...opcionesZoom,
+        plugins: {
+          ...opcionesZoom.plugins,
+          title: { display: true, text: 'Evolución Factor de Potencia (%)', font: { size: 15 } }
+        },
+        scales: {
+          x: opcionesZoom.scales.x,
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+
+  </script>
+  <div id="reporte-energia" style="display:none;">
+    <div style="text-align:center;margin-top:10px;">
+      <img src="https://cdn.prod.website-files.com/65d239c529f6f9c10f1b228a/6608358c6e37447b5b3242ca_beta.png" alt="Logo Beta" style="max-width:220px;margin-bottom:8px;">
+      <div style="text-align:right; color:#218451; font-size:1.2em; margin-top:-40px; margin-right:20px;">
+        Exportado: {{fecha_actual}}
+      </div>
+      <h1 style="color:#218451;font-size:2.2em;margin-top:0.6em;">Reporte Energía - Arándanos - BETA ICA</h1>
+      <div style="margin:0 0 16px 0;font-size:1.14em;color:#218451;">
+        <b>Periodo:</b> {{fecha_inicio}} a {{fecha_fin}}<br>
+        <b>Nivel:</b> {{nivel_print}}
+      </div>
+    </div>
+    <!-- KPI Boxes -->
+    <div class="resumen" style="background:#eafaf2;border-radius:18px;padding:16px 18px;margin:22px 0 26px 0;display:flex;flex-wrap:wrap;align-items:center;gap:30px;justify-content:center;">
+      <div class="res-box"><div class="label">Total Procesado</div><div class="valor">{{ '{:,.2f}'.format(suma_kg_procesados) }} KG</div></div>
+      <div class="res-box"><div class="label">Total Ingresado</div><div class="valor">{{ '{:,.2f}'.format(suma_kg_ingresados) }} KG</div></div>
+      <div class="res-box"><div class="label">Presentación</div><div class="valor">{{presentacion}}</div></div>
+      <div class="res-box"><div class="label">Variedad</div><div class="valor">{{variedad}}</div></div>
+    </div>
+    <!-- Tabla -->
+    <table class="tabla" style="width:100%;border-collapse:collapse;margin-bottom:22px;">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Energía (kWh)</th>
+          <th>Potencia (kW)</th>
+          <th>Factor Potencia (%)</th>
+          <th>Producción (KG)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in df %}
+        <tr>
+          <td>{{row.FECHA}}</td>
+          <td>{{"{:,.2f}".format(row.kWh) if row.kWh else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.kW)  if row.kW  else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.FP)  if row.FP  else "-"}}</td>
+          <td>{{"{:,.2f}".format(row.KG)  if row.KG  else "-"}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <!-- Gráficos como imágenes -->
+    <div class="graficos" id="pdf-graficos" style="display:flex;flex-wrap:wrap;gap:28px;margin-top:26px;justify-content:center;"></div>
+  </div>
+
+    <script>
+      async function exportarDashboardPDF() {
+          try {
+              // Ocultar los elementos solo-web
+              const webOnlyElements = document.querySelectorAll('.solo-web');
+              webOnlyElements.forEach(el => el.style.display = "none");
+
+              // Reemplazar canvas por imágenes
+              const charts = document.querySelectorAll('canvas');
+              const canvasReplacements = [];
+              for (const canvas of charts) {
+                  const img = document.createElement("img");
+                  img.src = canvas.toDataURL("image/png");
+                  img.style.maxWidth = "100%";
+                  img.style.display = "block";
+                  img.style.margin = "0 auto 22px auto";
+                  canvas.parentNode.replaceChild(img, canvas);
+                  canvasReplacements.push({canvas, img});
+              }
+
+              // Tomar el HTML exportable
+              const reporteHtml = document.getElementById('dashboard-export').outerHTML;
+              document.getElementById('pdf_html_input').value = reporteHtml;
+              document.getElementById('pdf-export-form').submit();
+
+              // Restaurar canvas y mostrar de nuevo los solo-web
+              canvasReplacements.forEach(({canvas, img}) => img.parentNode.replaceChild(canvas, img));
+              webOnlyElements.forEach(el => el.style.display = "");
+
+          } catch (error) {
+              alert("Ocurrió un error al exportar el PDF");
+          }
+      }
+
+    </script>
+
+</body>
+</html>
